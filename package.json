@@ -1,0 +1,15 @@
+{
+  "name": "othello",
+  "version": "1.0.0",
+  "description": "Agente inteligente que juega othello o reverse.",
+  "main": "agent.js",
+  "scripts": {
+    "agent": "node ./src/agent.js",
+    "other": "node ./recursos/src/other.js",
+    "startApp": "node ./src/app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
