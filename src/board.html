@@ -309,12 +309,27 @@
                         this.board = new Board()
                         this.INF = 1000000000.0
                     }
-                    
+
+                    whoWin(board, color, myColor){
+                        var size = board.length
+                        var W = 0
+                        var B = 0
+                        for( var i=0; i<size; i++){
+                            for(var j=0; j<size; j++){
+                                if(board[i][j]=='W') W++
+                                else if(board[i][j]=='B') B++
+                            }
+                        }
+                        return (myColor=='W')?(W-B):(B-W)
+                    }
+
                     // FUNCIÓN DE EVALUACIÓN
                     funct(board, color, myColor){
                         let totalPoints = 0; 
+
                         // Puntos por el recuento de fichas de color
-                        totalPoints += this.calculatePoints1(board, color, myColor);
+                        const nToken = this.calculatePoints1(board, color, myColor);
+                        totalPoints += nToken
                         console.log("Total points1: " + totalPoints, "Color: " + color, "MyColor: " + myColor);
                         
                         // Puntos por la posición del tablero
@@ -325,13 +340,7 @@
                         totalPoints += this.calculatePoints3(board, color, myColor);
                         console.log("Total points: " + totalPoints, "Color: " + color, "MyColor: " + myColor);
                         
-                        console.log(this.board.winner(board, 'W', 'B'));
-                        if(totalPoints > 0 && myColor != color){
-                            return 1;
-                        }
-                        else{
-                            return -1;
-                        }
+                        
                         return totalPoints;
                     }
                     // Calculo por recuento de numero de fichas
@@ -382,7 +391,7 @@
                             ' ': 0
                         }
                         const positionPoints = this.chooseMatrizPoints(board);
-                        // console.log(positionPoints)
+
                         let totalPoints = 0;
                         
                         // Recorrer el tablero y sumar los puntos según la posición
@@ -422,31 +431,30 @@
                     }
                     // Fin de evaluacion de tablero
 
-                    algorithm(board, depht, alpha, beta, color, myColor){                        
+                    algorithm(board, depht, alpha, beta, maximizing, color, myColor){                        
                         var rcolor = color=='W'?'B':'W'
 
                         // TODO: Add a better evaluation function
                         var moves = this.board.valid_moves(board, color)
                         var rmoves = this.board.valid_moves(board, rcolor)
                         if(depht == 0 || (moves.length == 0 && rmoves.length == 0)){
-                            // if(depht == 0) console.log("DEPTH 0")
-                            // else if(moves.length == 0 && rmoves.length == 0) console.log("NO MOVES " + depht)
                             const valGame = this.funct(board, color, myColor)
-                            console.log("VALGAME: " + valGame, "COLOR: " + color, "MYCOLOR: " + myColor, "DEPTH: " + depht)
+                            console.log("VALGAME: " + valGame, "COLOR: " + color, "MYCOLOR: " + myColor, "DEPTH: " + depht, "MOVES: " + moves.length, "RMOVES: " + rmoves.length)
                             console.log(board)
                             return valGame
                         }
                         if(moves.length == 0){
-                            return this.algorithm(board, depht-1, alpha, beta, rcolor, myColor)
+                            return this.algorithm(board, depht-1, alpha, beta, (maximizing? false: true), rcolor, myColor)
                         }
 
-                        if(color == myColor){
+                        if(maximizing){
                             var best = -this.INF
                             for(var i=0; i<moves.length; i++){
                                 var newBoard = this.board.clone(board)
                                 this.board.move(newBoard, moves[i][0], moves[i][1], color)
-                                best = Math.max(best, this.algorithm(newBoard, depht-1, alpha, beta, rcolor, myColor))
+                                best = Math.max(best, this.algorithm(newBoard, depht-1, alpha, beta, false, rcolor, myColor))
                                 if(best > beta) break
+                                // console.log("BEST: " + best, "ALPHA: " + alpha, "BETA: " + beta, "DEPTH: " + depht)
                                 alpha = Math.max(alpha, best)
                             }
                             return best
@@ -455,8 +463,9 @@
                             for(var i=0; i<moves.length; i++){
                                 var newBoard = this.board.clone(board)
                                 this.board.move(newBoard, moves[i][0], moves[i][1], color)
-                                best = Math.min(best, this.algorithm(newBoard, depht-1, alpha, beta, rcolor, myColor))
-                                if(best < beta) break
+                                best = Math.min(best, this.algorithm(newBoard, depht-1, alpha, beta, true, rcolor, myColor))
+                                if(best < alpha) break
+                                // console.log("BEST: " + best, "ALPHA: " + alpha, "BETA: " + beta, "DEPTH: " + depht)
                                 beta = Math.min(beta, best)
                             }
                             return best
@@ -470,7 +479,7 @@
                         for(var i=0; i<moves.length; i++){
                             var newBoard = this.board.clone(board)
                             this.board.move(newBoard, moves[i][0], moves[i][1], color)
-                            var value = this.algorithm(newBoard, maxDepth, -this.INF, this.INF, rcolor, color)
+                            var value = this.algorithm(newBoard, maxDepth, -this.INF, this.INF, false, rcolor, color)
                             if(value > best){
                                 best = value
                                 bestMove = moves[i]
@@ -489,7 +498,6 @@
                     calculateDepth(board, time){
                         const timeLimit = 19;
                         const dephtMax = 17;
-                        // const depthAverage = (100+3)/2;
                         const lenAverage = (board.length + board[0].length) / 2;
                         
                         // Calcular la profundidad según el tiempo disponible
@@ -524,9 +532,7 @@
                     compute(board, time){
                         this.algorithm.color = this.color   
                         // TODO: Add a better calculateDepth function
-                        // for(var i=0; i<3000000000; i++){} // Making it very slow to test time restriction
-                        var depth = 100//this.calculateDepth(board, time)
-                        console.log("Depth: " + depth)
+                        var depth = 200//this.calculateDepth(board, time)
                         var moves = this.algorithm.findBestMove(board, this.color, depth)
                         return moves
                     }
