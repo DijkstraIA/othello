@@ -309,24 +309,132 @@
                         this.board = new Board()
                         this.INF = 1000000000.0
                     }
-                    funct(board, color){
-                        var size = this.board.length
-                        var score = 0
-                        for( var i=0; i<size; i++)
-                            for(var j=0; j<size; j++)
-                            if(board[i][j] == ' ') continue
-                            if(board[i][j] == color) score = score + (1)
-                            else score= score - (1)
-                        return score                        
+                    
+                    // FUNCIÓN DE EVALUACIÓN
+                    funct(board, color, myColor){
+                        let totalPoints = 0; 
+                        // Puntos por el recuento de fichas de color
+                        totalPoints += this.calculatePoints1(board, color, myColor);
+                        console.log("Total points1: " + totalPoints, "Color: " + color, "MyColor: " + myColor);
+                        
+                        // Puntos por la posición del tablero
+                        totalPoints += this.calculatePoints2(board, color, myColor);
+                        console.log("Total points2: " + totalPoints, "Color: " + color, "MyColor: " + myColor);
+                        
+                        // Puntos por las esquinas ocupadas
+                        totalPoints += this.calculatePoints3(board, color, myColor);
+                        console.log("Total points: " + totalPoints, "Color: " + color, "MyColor: " + myColor);
+                        
+                        console.log(this.board.winner(board, 'W', 'B'));
+                        if(totalPoints > 0 && myColor != color){
+                            return 1;
+                        }
+                        else{
+                            return -1;
+                        }
+                        return totalPoints;
                     }
+                    // Calculo por recuento de numero de fichas
+                    calculatePoints1(board, color, myColor){
+                        const scores ={
+                            'W': (myColor == 'W') ? 1 : -1,
+                            'B': (myColor == 'B') ? 1 : -1,
+                            ' ': 0
+                        }
+                        let totalPoints = 0;
+                        for (let i = 0; i < board.length; i++){
+                            for(let j = 0; j < board[i].length; j++){
+                                if(board[i][j] == color){
+                                    totalPoints += scores[color]
+                                }
+                            }
+                        }
+                        return totalPoints;
+                    }
+                    // Calculo por posicion de pieza
+                    chooseMatrizPoints(board){
+                        const n = board.length;
+                        if(n == 8){
+                            return [
+                                [120, -20, 20, 5, 5, 20, -20, 120],
+                                [-20, -40, -5, -5, -5, -5, -40, -20],
+                                [20, -5, 15, 3, 3, 15, -5, 20],
+                                [5, -5, 3, 1, 1, 3, -5, 5],
+                                [5, -5, 3, 1, 1, 3, -5, 5],
+                                [20, -5, 15, 3, 3, 15, -5, 20],
+                                [-20, -40, -5, -5, -5, -5, -40, -20],
+                                [120, -20, 20, 5, 5, 20, -20, 120]
+                            ]; 
+                        }
+                        if(n == 4){
+                            return [
+                                [15,3,3,15],
+                                [3,1,1,3],
+                                [3,1,1,3],
+                                [15,3,3,15]
+                            ];
+                        }
+                    }
+                    calculatePoints2(board, color, myColor){
+                        const scores ={
+                            'W': (myColor == 'W') ? 1 : -1,
+                            'B': (myColor == 'B') ? 1 : -1,
+                            ' ': 0
+                        }
+                        const positionPoints = this.chooseMatrizPoints(board);
+                        // console.log(positionPoints)
+                        let totalPoints = 0;
+                        
+                        // Recorrer el tablero y sumar los puntos según la posición
+                        for (let i = 0; i < board.length; i++) {
+                            for (let j = 0; j < board[i].length; j++) {
+                                if (board[i][j] === color) {
+                                    totalPoints += positionPoints[i][j]*scores[color];
+                                }
+                            }
+                        }
+                        
+                        return totalPoints;
+                    }
+                    // Calculo por esquinas
+                    calculatePoints3(board, color, myColor){
+                        const cornerPoints = {
+                            'W': (myColor == 'W'? 10: -10), // Puntos para el jugador X por cada esquina ocupada
+                            'B': (myColor == 'B'? 10: -10) // Puntos para el jugador O por cada esquina ocupada
+                        };
+                        let totalPoints = 0;
+                        const n = board.length - 1;
+                        // Comprobar las cuatro esquinas del tablero
+                        if (board[0][0] === color) {
+                            totalPoints += cornerPoints[color];
+                        }
+                        if (board[0][n] === color) {
+                            totalPoints += cornerPoints[color];
+                        }
+                        if (board[n][0] === color) {
+                            totalPoints += cornerPoints[color];
+                        }
+                        if (board[n][n] === color) {
+                            totalPoints += cornerPoints[color];
+                        }
+                        
+                        return totalPoints;
+                    }
+                    // Fin de evaluacion de tablero
+
                     algorithm(board, depht, alpha, beta, color, myColor){                        
                         var rcolor = color=='W'?'B':'W'
 
-                        // TODO: Add a better evaluation function AND Review stop function 
+                        // TODO: Add a better evaluation function
                         var moves = this.board.valid_moves(board, color)
                         var rmoves = this.board.valid_moves(board, rcolor)
                         if(depht == 0 || (moves.length == 0 && rmoves.length == 0)){
-                            return this.funct(board, color)
+                            // if(depht == 0) console.log("DEPTH 0")
+                            // else if(moves.length == 0 && rmoves.length == 0) console.log("NO MOVES " + depht)
+                            const valGame = this.funct(board, color, myColor)
+                            console.log("VALGAME: " + valGame, "COLOR: " + color, "MYCOLOR: " + myColor, "DEPTH: " + depht)
+                            console.log(board)
+                            return valGame
                         }
                         if(moves.length == 0){
                             return this.algorithm(board, depht-1, alpha, beta, rcolor, myColor)
@@ -378,9 +486,47 @@
                         this.algorithm = new MinMax()
                     }
 
+                    calculateDepth(board, time){
+                        const timeLimit = 19;
+                        const dephtMax = 17;
+                        // const depthAverage = (100+3)/2;
+                        const lenAverage = (board.length + board[0].length) / 2;
+                        
+                        // Calcular la profundidad según el tiempo disponible
+                        // let depth = Math.floor(time / timeLimit * dephtMax);
+                        let depth = 100
+                        
+                        if(lenAverage > 17){
+                            depth = Math.min(depth, 3);
+                        }
+                        else if(lenAverage > 11){
+                            depth = Math.min(depth, 5);
+                        }
+                        else if(lenAverage > 7){
+                            depth = Math.min(depth, 7);
+                        }
+                        else if(lenAverage > 5){
+                            depth = Math.min(depth, 11);
+                        }
+                        else{
+                            depth = Math.min(depth, 100);
+                        }
+
+                        // Ajustar la profundidad según el tamaño del tablero
+                        // depth = Math.min(depth, dephtMax);
+                        
+                        // Asegurarse de que la profundidad sea mayor que cero
+                        depth = Math.max(depth, 1);
+
+                        return depth;
+                    }
+
                     compute(board, time){
                         this.algorithm.color = this.color   
-                        var depth = 3
+                        // TODO: Add a better calculateDepth function
+                        // for(var i=0; i<3000000000; i++){} // Making it very slow to test time restriction
+                        var depth = 100//this.calculateDepth(board, time)
+                        console.log("Depth: " + depth)
                         var moves = this.algorithm.findBestMove(board, this.color, depth)
                         return moves
                     }
@@ -396,7 +542,7 @@
                     compute(board, time){
                         var moves = this.board.valid_moves(board, this.color)
                         var index = Math.floor(moves.length * Math.random())
-                        // for(var i=0; i<50000000; i++){} // Making it very slow to test time restriction
+                        for(var i=0; i<50000000; i++){} // Making it very slow to test time restriction
                         return moves[index]
                     }
                 }
@@ -409,7 +555,7 @@
                     super()
                     this.board = new Board()
                     this.players = { // Here we are going to set all the players name : instance of class
-                        'IA': new DijkstraIAPlayer(),
+                        'AI': new DijkstraIAPlayer(),
                         'rand1': new RandomPlayer(),
                         'rand2': new RandomPlayer()
                         }
