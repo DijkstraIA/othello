@@ -556,22 +556,65 @@
           super();
           this.board = new Board();
           this.maxDepth = 5;
+          this.memo = {};
         }
 
+        // compute(board, time) {
+        //   let bestMove = this.minimax(
+        //     board,
+        //     this.color,
+        //     this.maxDepth,
+        //     -Infinity,
+        //     Infinity
+        //   ).move;
+        //   return bestMove;
+        // }
+
         compute(board, time) {
-          let bestMove = this.minimax(
-            board,
-            this.color,
-            this.maxDepth,
-            -Infinity,
-            Infinity
-          ).move;
+          let bestMove = null;
+          let startTime = Date.now();
+          let timePerMove =
+            time / this.board.valid_moves(board, this.color).length;
+          let depth = this.calculateDepth(board, timePerMove);
+          for (let d = 1; d <= depth; d++) {
+            let result = this.minimax(
+              board,
+              this.color,
+              d,
+              -Infinity,
+              Infinity
+            );
+            bestMove = result.move;
+            if (Date.now() - startTime > timePerMove) break;
+          }
+          console.log(depth);
+          console.log("TimePerMove: " + timePerMove);
           return bestMove;
+        }
+
+        calculateDepth(board, timePerMove) {
+          // Calcular la profundidad en función del tamaño del tablero
+          let size = board.length;
+          let depth = size <= 6 ? 7 : size <= 8 ? 5 : 3; //Si es menor a 6x6= 7, si es menor a 8x8=5, si es mayor a 8x8=3
+
+          // Ajustar la profundidad en función del tiempo disponible
+          if (timePerMove < 1000) depth--;
+          if (timePerMove < 500) depth--;
+
+          return depth;
         }
 
         minimax(board, player, depth, alpha, beta) {
           let opponent = player === "W" ? "B" : "W";
           let validMoves = this.board.valid_moves(board, player);
+
+          // Crear una clave única para el estado del juego actual
+          //let key = board.toString() + player + depth + alpha + beta;
+
+          // Verificar si el valor ya se ha calculado previamente
+          // if (this.memo.hasOwnProperty(key)) {
+          //   return this.memo[key];
+          // }
 
           if (depth === 0 || validMoves.length === 0) {
             return { score: this.evaluateBoard(board) };
@@ -607,9 +650,65 @@
 
             if (alpha >= beta) break;
           }
+
+          // Almacenar el valor en la tabla hash
+          //this.memo[key] = bestValue;
+
           return bestValue;
         }
 
+        // constructor() {
+        //   super();
+        //   this.board = new Board();
+        //   this.maxDepth = 5;
+        //   this.memo = {};
+        // }
+        // compute(board, time) {
+        //   let bestMove = this.minimax(
+        //     board,
+        //     this.color,
+        //     this.maxDepth,
+        //     -Infinity,
+        //     Infinity
+        //   ).move;
+        //   return bestMove;
+        // }
+        // minimax(board, player, depth, alpha, beta) {
+        //   let opponent = player === "W" ? "B" : "W";
+        //   let validMoves = this.board.valid_moves(board, player);
+        //   if (depth === 0 || validMoves.length === 0) {
+        //     return { score: this.evaluateBoard(board) };
+        //   }
+        //   let bestValue = {
+        //     score: player === this.color ? -Infinity : Infinity
+        //   };
+        //   for (let move of validMoves) {
+        //     let newBoard = this.board.clone(board);
+        //     this.board.move(newBoard, move[0], move[1], player);
+        //     let value = this.minimax(
+        //       newBoard,
+        //       opponent,
+        //       depth - 1,
+        //       alpha,
+        //       beta
+        //     );
+        //     if (player === this.color) {
+        //       if (value.score > bestValue.score) {
+        //         bestValue.score = value.score;
+        //         bestValue.move = move;
+        //       }
+        //       alpha = Math.max(alpha, value.score);
+        //     } else {
+        //       if (value.score < bestValue.score) {
+        //         bestValue.score = value.score;
+        //         bestValue.move = move;
+        //       }
+        //       beta = Math.min(beta, value.score);
+        //     }
+        //     if (alpha >= beta) break;
+        //   }
+        //   return bestValue;
+        // }
         evaluateBoard(board) {
           let opponent = this.color === "W" ? "B" : "W";
           let myValidMoves = this.board.valid_moves(board, this.color).length;
@@ -618,7 +717,6 @@
             opponent
           ).length;
           let mobilityScore = myValidMoves - opponentValidMoves;
-
           let corners = [
             [0, 0],
             [0, board.length - 1],
@@ -633,7 +731,6 @@
               cornerScore -= 1;
             }
           }
-
           let borderScore = 0;
           for (let i = 0; i < board.length; i++) {
             if (board[i][0] === this.color && !corners.includes([i, 0])) {
@@ -669,12 +766,49 @@
               borderScore -= 1;
             }
           }
-
-          return mobilityScore + 10 * cornerScore + borderScore;
+          // Stoner Trap strategy
+          let stonerTrapScore = 0;
+          let stonerTraps = [
+            [
+              [0, 1],
+              [1, 0],
+              [1, 1]
+            ],
+            [
+              [0, board.length - 2],
+              [1, board.length - 2],
+              [1, board.length - 1]
+            ],
+            [
+              [board.length - 2, 0],
+              [board.length - 2, 1],
+              [board.length - 1, 1]
+            ],
+            [
+              [board.length - 2, board.length - 2],
+              [board.length - 2, board.length - 1],
+              [board.length - 1, board.length - 2]
+            ]
+          ];
+          for (let trap of stonerTraps) {
+            if (
+              board[trap[0][0]][trap[0][1]] === opponent &&
+              board[trap[1][0]][trap[1][1]] === opponent &&
+              board[trap[2][0]][trap[2][1]] === opponent
+            ) {
+              stonerTrapScore -= 3;
+            }
+          }
+          return (
+            mobilityScore +
+            11 * cornerScore +
+            borderScore +
+            13 * stonerTrapScore
+          );
         }
       }
       // ----- //
-      class DijkstraIAPlayerLUIS2 extends Agent {
+      class DijkstraIAPlayerENEMY extends Agent {
         constructor() {
           super();
           this.board = new Board();
@@ -941,7 +1075,7 @@
           this.players = {
             // Here we are going to set all the players name : instance of class
             AIL: new DijkstraIAPlayerLUIS(),
-            AIS: new DijkstraIAPlayerLUIS2(),
+            AIS: new DijkstraIAPlayerENEMY(),
             rand1: new RandomPlayer(),
             rand2: new RandomPlayer()
           };
