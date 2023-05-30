@@ -616,6 +616,22 @@
                         return moves
                     }
                 }
+
+                class PersonPlayer extends Agent {
+                    constructor() {
+                    super();
+                    this.board = new Board();
+                    }
+
+                    compute(board, time) {
+                    var moves = this.board.valid_moves(board, this.color);
+                    for(var i = 0; i < moves.length; i++) {
+                        console.log(i + ": " + moves[i]);
+                    }
+                    const index = prompt('Seleccione una casilla:');
+                    return moves[index];
+                    }
+                }
                 // ----- //
                 
                 class RandomPlayer extends Agent{
