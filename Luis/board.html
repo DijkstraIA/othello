@@ -375,47 +375,16 @@
        * Player's Code (Must inherit from Agent)
        * This is an example of a rangom player agent
        */
-      // DIJKSTRA IA PLAYER
       class MinMax {
         constructor() {
           this.board = new Board();
           this.INF = 1000000000.0;
         }
 
-        whoWin(board, color, myColor) {
-          var size = board.length;
-          var W = 0;
-          var B = 0;
-          for (var i = 0; i < size; i++) {
-            for (var j = 0; j < size; j++) {
-              if (board[i][j] == "W") W++;
-              else if (board[i][j] == "B") B++;
-            }
-          }
-          return myColor == "W" ? W - B : B - W;
-        }
-
         // FUNCIÓN DE EVALUACIÓN
         funct(board, color, myColor) {
           let totalPoints = 0;
           const rcolor = color === "W" ? "B" : "W";
-
-          // // Puntos por el recuento de fichas de color
-          // var rcolor = myColor=='W'?'B':'W'
-          // const numRColor = this.calculatePoints1(board, rcolor, rcolor);
-          // const numMyColor = this.calculatePoints1(board, myColor, myColor);
-
-          // console.log("Total points1: " + totalPoints, "Color: " + color, "MyColor: " + myColor);
-
-          // // Puntos por la posición del tablero
-          // totalPoints += this.calculatePoints2(board, color, myColor);
-          // console.log("Total points2: " + totalPoints, "Color: " + color, "MyColor: " + myColor);
-
-          // // Puntos por las esquinas ocupadas
-          // totalPoints += this.calculatePoints3(board, color, myColor);
-          // console.log("Total points: " + totalPoints, "Color: " + color, "MyColor: " + myColor);
-
-          // console.log("numRColor: " + numRColor, "numMyColor: " + numMyColor)
 
           for (let i = 0; i < board.length; i++) {
             for (let j = 0; j < board[i].length; j++) {
@@ -427,6 +396,8 @@
             }
           }
 
+          totalPoints += this.calculatePoints3(board, color, myColor);
+
           // Ajusta el puntaje si el jugador es el jugador actual (myColor)
           if (color === myColor) {
             return totalPoints;
@@ -434,132 +405,11 @@
             return -totalPoints;
           }
         }
-        // funct(board, color) {
-        //     const rcolor = color === 'W' ? 'B' : 'W';
-        //     let score = 0;
-
-        //     // Puntos por ocupar las esquinas
-        //     const cornerPoints = [
-        //         [0, 0], [0, board.length - 1], [board.length - 1, 0], [board.length - 1, board.length - 1]
-        //     ];
-        //     for (const [row, col] of cornerPoints) {
-        //         if (board[row][col] === color) {
-        //             score += 5;
-        //         } else if (board[row][col] === rcolor) {
-        //             score -= 5;
-        //         }
-        //     }
-
-        //     // Puntos por controlar el borde
-        //     for (let i = 1; i < board.length - 1; i++) {
-        //         if (board[0][i] === color) {
-        //         score += 3;
-        //         } else if (board[0][i] === rcolor) {
-        //         score -= 3;
-        //         }
-        //         if (board[i][0] === color) {
-        //         score += 3;
-        //         } else if (board[i][0] === rcolor) {
-        //         score -= 3;
-        //         }
-        //         if (board[board.length - 1][i] === color) {
-        //         score += 3;
-        //         } else if (board[board.length - 1][i] === rcolor) {
-        //         score -= 3;
-        //         }
-        //         if (board[i][board.length - 1] === color) {
-        //         score += 3;
-        //         } else if (board[i][board.length - 1] === rcolor) {
-        //         score -= 3;
-        //         }
-        //     }
-
-        //     // Puntos por la cantidad de fichas
-        //     let myPieces = 0;
-        //     let opponentPieces = 0;
-
-        //     for (let i = 0; i < board.length; i++) {
-        //         for (let j = 0; j < board[i].length; j++) {
-        //         if (board[i][j] === color) {
-        //             myPieces++;
-        //         } else if (board[i][j] === rcolor) {
-        //             opponentPieces++;
-        //         }
-        //         }
-        //     }
-
-        //     score += myPieces - opponentPieces;
-
-        //     return score;
-        //     }
-
-        // Calculo por recuento de numero de fichas
-        calculatePoints1(board, color, myColor) {
-          const scores = {
-            W: myColor == "W" ? 1 : -1,
-            B: myColor == "B" ? 1 : -1,
-            " ": 0
-          };
-          let totalPoints = 0;
-          for (let i = 0; i < board.length; i++) {
-            for (let j = 0; j < board[i].length; j++) {
-              if (board[i][j] == color) {
-                totalPoints += scores[color];
-              }
-            }
-          }
-          return totalPoints;
-        }
-        // Calculo por posicion de pieza
-        chooseMatrizPoints(board) {
-          const n = board.length;
-          if (n == 8) {
-            return [
-              [120, -20, 20, 5, 5, 20, -20, 120],
-              [-20, -40, -5, -5, -5, -5, -40, -20],
-              [20, -5, 15, 3, 3, 15, -5, 20],
-              [5, -5, 3, 1, 1, 3, -5, 5],
-              [5, -5, 3, 1, 1, 3, -5, 5],
-              [20, -5, 15, 3, 3, 15, -5, 20],
-              [-20, -40, -5, -5, -5, -5, -40, -20],
-              [120, -20, 20, 5, 5, 20, -20, 120]
-            ];
-          }
-          if (n == 4) {
-            return [
-              [15, 3, 3, 15],
-              [3, 1, 1, 3],
-              [3, 1, 1, 3],
-              [15, 3, 3, 15]
-            ];
-          }
-        }
-        calculatePoints2(board, color, myColor) {
-          const scores = {
-            W: myColor == "W" ? 1 : -1,
-            B: myColor == "B" ? 1 : -1,
-            " ": 0
-          };
-          const positionPoints = this.chooseMatrizPoints(board);
-
-          let totalPoints = 0;
-
-          // Recorrer el tablero y sumar los puntos según la posición
-          for (let i = 0; i < board.length; i++) {
-            for (let j = 0; j < board[i].length; j++) {
-              if (board[i][j] === color) {
-                totalPoints += positionPoints[i][j] * scores[color];
-              }
-            }
-          }
-
-          return totalPoints;
-        }
         // Calculo por esquinas
         calculatePoints3(board, color, myColor) {
           const cornerPoints = {
-            W: myColor == "W" ? 10 : -10, // Puntos para el jugador X por cada esquina ocupada
-            B: myColor == "B" ? 10 : -10 // Puntos para el jugador O por cada esquina ocupada
+            W: color == "W" ? 3 : -3, // Puntos para el jugador X por cada esquina ocupada
+            B: color == "B" ? 3 : -3 // Puntos para el jugador O por cada esquina ocupada
           };
           let totalPoints = 0;
           const n = board.length - 1;
@@ -588,9 +438,7 @@
           var moves = this.board.valid_moves(board, color);
           var rmoves = this.board.valid_moves(board, rcolor);
           if (depht === 0 || (moves.length === 0 && rmoves.length === 0)) {
-            const valGame = this.funct(board, color, myColor); //this.funct(board, color)
-            // console.log("VALGAME: " + valGame, "COLOR: " + color, "MYCOLOR: " + myColor, "DEPTH: " + depht, "MOVES: " + moves.length, "RMOVES: " + rmoves.length)
-            // console.log(board)
+            const valGame = this.funct(board, color, myColor);
             return valGame;
           }
           if (moves.length === 0) {
@@ -623,7 +471,6 @@
                 )
               );
               if (best > beta) break;
-              // console.log("BEST: " + best, "ALPHA: " + alpha, "BETA: " + beta, "DEPTH: " + depht)
               alpha = Math.max(alpha, best);
             }
             return best;
@@ -645,7 +492,6 @@
                 )
               );
               if (best < alpha) break;
-              // console.log("BEST: " + best, "ALPHA: " + alpha, "BETA: " + beta, "DEPTH: " + depht)
               beta = Math.min(beta, best);
             }
             return best;
@@ -676,56 +522,400 @@
           return bestMove;
         }
       }
-      class DijkstraIAPlayer extends Agent {
+
+      class DijkstraIAPlayerSEBASTIAN extends Agent {
         constructor() {
           super();
           this.board = new Board();
           this.algorithm = new MinMax();
         }
 
-        calculateDepth(board, time) {
-          const size = board.length;
-          let depth;
-          if (size <= 6) {
-            depth = 8;
-          } else if (size <= 8) {
-            depth = 7;
-          } else if (size <= 10) {
-            depth = 6;
-          } else if (size <= 12) {
-            depth = 5;
-          } else if (size <= 14) {
-            depth = 4;
-          } else if (size <= 16) {
-            depth = 3;
-          } else if (size <= 18) {
-            depth = 2;
-          } else {
-            depth = 1;
-          }
-
-          // Adjust depth based on remaining time
-          if (time < 5000) {
-            depth = Math.max(1, depth - 3);
-          } else if (time < 20000) {
-            depth = Math.max(1, depth - 1);
-          } else if (time < 10000) {
-            depth = Math.max(1, depth - 2);
-          }
-
+        calculateDepth(board, remainingTime) {
+          const timeLimit = this.time;
+          const possibleMoves = this.board.valid_moves(board, this.color);
+          let depth = 1;
+          if (board.length == 4) depth = 200;
+          else if (board.length == 8) depth = 5;
+          else if (board.length == 20) depth = 3;
+          else depth = 1;
           return depth;
         }
 
         compute(board, time) {
-          this.algorithm.color = this.color;
           // TODO: Add a better calculateDepth function
-          var depth = this.calculateDepth(board, time); //5
-          console.log(depth);
+          var depth = this.calculateDepth(board, time);
+
+          this.algorithm.color = this.color;
           var moves = this.algorithm.findBestMove(board, this.color, depth);
           return moves;
         }
       }
+      // DIJKSTRA IA PLAYER
+      class DijkstraIAPlayerLUIS extends Agent {
+        constructor() {
+          super();
+          this.board = new Board();
+          this.maxDepth = 5;
+        }
+
+        compute(board, time) {
+          let bestMove = this.minimax(
+            board,
+            this.color,
+            this.maxDepth,
+            -Infinity,
+            Infinity
+          ).move;
+          return bestMove;
+        }
+
+        minimax(board, player, depth, alpha, beta) {
+          let opponent = player === "W" ? "B" : "W";
+          let validMoves = this.board.valid_moves(board, player);
+
+          if (depth === 0 || validMoves.length === 0) {
+            return { score: this.evaluateBoard(board) };
+          }
+
+          let bestValue = {
+            score: player === this.color ? -Infinity : Infinity
+          };
+          for (let move of validMoves) {
+            let newBoard = this.board.clone(board);
+            this.board.move(newBoard, move[0], move[1], player);
+            let value = this.minimax(
+              newBoard,
+              opponent,
+              depth - 1,
+              alpha,
+              beta
+            );
+
+            if (player === this.color) {
+              if (value.score > bestValue.score) {
+                bestValue.score = value.score;
+                bestValue.move = move;
+              }
+              alpha = Math.max(alpha, value.score);
+            } else {
+              if (value.score < bestValue.score) {
+                bestValue.score = value.score;
+                bestValue.move = move;
+              }
+              beta = Math.min(beta, value.score);
+            }
+
+            if (alpha >= beta) break;
+          }
+          return bestValue;
+        }
+
+        evaluateBoard(board) {
+          let opponent = this.color === "W" ? "B" : "W";
+          let myValidMoves = this.board.valid_moves(board, this.color).length;
+          let opponentValidMoves = this.board.valid_moves(
+            board,
+            opponent
+          ).length;
+          let mobilityScore = myValidMoves - opponentValidMoves;
+
+          let corners = [
+            [0, 0],
+            [0, board.length - 1],
+            [board.length - 1, 0],
+            [board.length - 1, board.length - 1]
+          ];
+          let cornerScore = 0;
+          for (let corner of corners) {
+            if (board[corner[0]][corner[1]] === this.color) {
+              cornerScore += 1;
+            } else if (board[corner[0]][corner[1]] === opponent) {
+              cornerScore -= 1;
+            }
+          }
+
+          let borderScore = 0;
+          for (let i = 0; i < board.length; i++) {
+            if (board[i][0] === this.color && !corners.includes([i, 0])) {
+              borderScore += 1;
+            } else if (board[i][0] === opponent && !corners.includes([i, 0])) {
+              borderScore -= 1;
+            }
+            if (
+              board[i][board.length - 1] === this.color &&
+              !corners.includes([i, board.length - 1])
+            ) {
+              borderScore += 1;
+            } else if (
+              board[i][board.length - 1] === opponent &&
+              !corners.includes([i, board.length - 1])
+            ) {
+              borderScore -= 1;
+            }
+            if (board[0][i] === this.color && !corners.includes([0, i])) {
+              borderScore += 1;
+            } else if (board[0][i] === opponent && !corners.includes([0, i])) {
+              borderScore -= 1;
+            }
+            if (
+              board[board.length - 1][i] === this.color &&
+              !corners.includes([board.length - 1, i])
+            ) {
+              borderScore += 1;
+            } else if (
+              board[board.length - 1][i] === opponent &&
+              !corners.includes([board.length - 1, i])
+            ) {
+              borderScore -= 1;
+            }
+          }
+
+          return mobilityScore + 10 * cornerScore + borderScore;
+        }
+      }
       // ----- //
+      class DijkstraIAPlayerLUIS2 extends Agent {
+        constructor() {
+          super();
+          this.board = new Board();
+          this.maxDepth = 7;
+        }
+
+        compute(board, time) {
+          let bestMove = this.minimax(
+            board,
+            this.color,
+            this.maxDepth,
+            -Infinity,
+            Infinity
+          ).move;
+          return bestMove;
+        }
+
+        minimax(board, player, depth, alpha, beta) {
+          let opponent = player === "W" ? "B" : "W";
+          let validMoves = this.board.valid_moves(board, player);
+
+          if (depth === 0 || validMoves.length === 0) {
+            return { score: this.evaluateBoard(board) };
+          }
+
+          let bestValue = {
+            score: player === this.color ? -Infinity : Infinity
+          };
+          for (let move of validMoves) {
+            let randomIndex = Math.floor(Math.random() * validMoves.length);
+            let move = validMoves[randomIndex];
+            validMoves.splice(randomIndex, 1);
+            let newBoard = this.board.clone(board);
+            this.board.move(newBoard, move[0], move[1], player);
+            let value = this.minimax(
+              newBoard,
+              opponent,
+              depth - 1,
+              alpha,
+              beta
+            );
+
+            if (player === this.color) {
+              if (value.score > bestValue.score) {
+                bestValue.score = value.score;
+                bestValue.move = move;
+              }
+              alpha = Math.max(alpha, value.score);
+            } else {
+              if (value.score < bestValue.score) {
+                bestValue.score = value.score;
+                bestValue.move = move;
+              }
+              beta = Math.min(beta, value.score);
+            }
+
+            if (alpha >= beta) break;
+          }
+          return bestValue;
+        }
+
+        evaluateBoard(board) {
+          let opponent = this.color === "W" ? "B" : "W";
+          let myValidMoves = this.board.valid_moves(board, this.color).length;
+          let opponentValidMoves = this.board.valid_moves(
+            board,
+            opponent
+          ).length;
+          let mobilityScore = myValidMoves - opponentValidMoves;
+
+          let corners = [
+            [0, 0],
+            [0, board.length - 1],
+            [board.length - 1, 0],
+            [board.length - 1, board.length - 1]
+          ];
+          let cornerScore = 0;
+          for (let corner of corners) {
+            if (board[corner[0]][corner[1]] === this.color) {
+              cornerScore += 1;
+            } else if (board[corner[0]][corner[1]] === opponent) {
+              cornerScore -= 1;
+            }
+          }
+
+          let borderScore = 0;
+          for (let i = 0; i < board.length; i++) {
+            if (board[i][0] === this.color && !corners.includes([i, 0])) {
+              borderScore += 1;
+            } else if (board[i][0] === opponent && !corners.includes([i, 0])) {
+              borderScore -= 1;
+            }
+            if (
+              board[i][board.length - 1] === this.color &&
+              !corners.includes([i, board.length - 1])
+            ) {
+              borderScore += 1;
+            } else if (
+              board[i][board.length - 1] === opponent &&
+              !corners.includes([i, board.length - 1])
+            ) {
+              borderScore -= 1;
+            }
+            if (board[0][i] === this.color && !corners.includes([0, i])) {
+              borderScore += 1;
+            } else if (board[0][i] === opponent && !corners.includes([0, i])) {
+              borderScore -= 1;
+            }
+            if (
+              board[board.length - 1][i] === this.color &&
+              !corners.includes([board.length - 1, i])
+            ) {
+              borderScore += 1;
+            } else if (
+              board[board.length - 1][i] === opponent &&
+              !corners.includes([board.length - 1, i])
+            ) {
+              borderScore -= 1;
+            }
+          }
+
+          let myCount = 0;
+          let opponentCount = 0;
+          for (let i = 0; i < board.length; i++) {
+            for (let j = 0; j < board[i].length; j++) {
+              if (board[i][j] === this.color) {
+                myCount++;
+              } else if (board[i][j] === opponent) {
+                opponentCount++;
+              }
+            }
+          }
+          let parityScore = (myCount - opponentCount) % 2 === 0 ? -1 : 1;
+
+          let stabilityScore = 0;
+          let directions = [
+            [-1, -1],
+            [-1, 0],
+            [-1, 1],
+            [0, -1],
+            [0, 1],
+            [1, -1],
+            [1, 0],
+            [1, 1]
+          ];
+          for (let i = 0; i < board.length; i++) {
+            for (let j = 0; j < board[i].length; j++) {
+              if (board[i][j] === this.color || board[i][j] === opponent) {
+                let stable = true;
+                for (let direction of directions) {
+                  let x = i + direction[0];
+                  let y = j + direction[1];
+                  while (
+                    x >= 0 &&
+                    x < board.length &&
+                    y >= 0 &&
+                    y < board[i].length
+                  ) {
+                    if (board[x][y] === " ") {
+                      stable = false;
+                      break;
+                    }
+                    x += direction[0];
+                    y += direction[1];
+                  }
+                  if (!stable) break;
+                }
+                if (stable) {
+                  stabilityScore += board[i][j] === this.color ? 1 : -1;
+                }
+              }
+            }
+          }
+
+          return (
+            parityScore +
+            3 * mobilityScore +
+            11 * cornerScore +
+            5 * borderScore +
+            stabilityScore
+          );
+
+          // let opponent = this.color === "W" ? "B" : "W";
+          // let myValidMoves = this.board.valid_moves(board, this.color).length;
+          // let opponentValidMoves = this.board.valid_moves(
+          //   board,
+          //   opponent
+          // ).length;
+          // let mobilityScore = myValidMoves - opponentValidMoves;
+          // let corners = [
+          //   [0, 0],
+          //   [0, board.length - 1],
+          //   [board.length - 1, 0],
+          //   [board.length - 1, board.length - 1]
+          // ];
+          // let cornerScore = 0;
+          // for (let corner of corners) {
+          //   if (board[corner[0]][corner[1]] === this.color) {
+          //     cornerScore += 1;
+          //   } else if (board[corner[0]][corner[1]] === opponent) {
+          //     cornerScore -= 1;
+          //   }
+          // }
+          // let borderScore = 0;
+          // for (let i = 0; i < board.length; i++) {
+          //   if (board[i][0] === this.color && !corners.includes([i, 0])) {
+          //     borderScore += 1;
+          //   } else if (board[i][0] === opponent && !corners.includes([i, 0])) {
+          //     borderScore -= 1;
+          //   }
+          //   if (
+          //     board[i][board.length - 1] === this.color &&
+          //     !corners.includes([i, board.length - 1])
+          //   ) {
+          //     borderScore += 1;
+          //   } else if (
+          //     board[i][board.length - 1] === opponent &&
+          //     !corners.includes([i, board.length - 1])
+          //   ) {
+          //     borderScore -= 1;
+          //   }
+          //   if (board[0][i] === this.color && !corners.includes([0, i])) {
+          //     borderScore += 1;
+          //   } else if (board[0][i] === opponent && !corners.includes([0, i])) {
+          //     borderScore -= 1;
+          //   }
+          //   if (
+          //     board[board.length - 1][i] === this.color &&
+          //     !corners.includes([board.length - 1, i])
+          //   ) {
+          //     borderScore += 1;
+          //   } else if (
+          //     board[board.length - 1][i] === opponent &&
+          //     !corners.includes([board.length - 1, i])
+          //   ) {
+          //     borderScore -= 1;
+          //   }
+          // }
+          // return mobilityScore + 10 * cornerScore + borderScore;
+        }
+      }
 
       class RandomPlayer extends Agent {
         constructor() {
@@ -750,8 +940,8 @@
           this.board = new Board();
           this.players = {
             // Here we are going to set all the players name : instance of class
-            AI: new DijkstraIAPlayer(),
-            AI2: new DijkstraIAPlayer(),
+            AIL: new DijkstraIAPlayerLUIS(),
+            AIS: new DijkstraIAPlayerLUIS2(),
             rand1: new RandomPlayer(),
             rand2: new RandomPlayer()
           };
